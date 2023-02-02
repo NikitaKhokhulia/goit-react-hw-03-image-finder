@@ -1,31 +1,50 @@
 import { Component } from 'react';
-import Searchbar from './Searchbar/Searchbar';
 import { Container } from './App.styled';
+import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
-import ImageGalleryItem from './ImageGalleryItem/ImageGalleryItem';
 
 export default class App extends Component {
   state = {
-    image: null,
+    images: [],
+    searchValue: '',
+    loading: false,
+    page: 1,
   };
 
-  componentDidMount() {
-    fetch(
-      'https://pixabay.com/api/?q=cat&page=1&key=32602486-88d6814d0d09c23868840d0fe&image_type=photo&orientation=horizontal&per_page=12'
-    )
-      .then(res => res.json())
-      .then(console.log);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.searchValue !== this.state.searchValue || this.state.page !== prevState.page) {
+      this.setState({ loading: true });
+      setTimeout(() => {
+        fetch(
+          `https://pixabay.com/api/?q=${this.state.searchValue}&page=${this.state.page}&key=32602486-88d6814d0d09c23868840d0fe&image_type=photo&orientation=horizontal&per_page=12`
+        )
+          .then(res => res.json())
+          .then(data =>
+            this.setState({
+              images: [...this.state.images, ...data.hits],
+            })
+          )
+          .finally(() => this.setState({ loading: false }));
+      }, 1000);
+    }
   }
+
+  handleFormSubmit = data => {
+    this.setState({ images: [], page:1, searchValue: data });
+  };
 
   render() {
     return (
       <>
         <Container>
-          <Searchbar></Searchbar>
-          <ImageGallery>
-            <ImageGalleryItem />
-          </ImageGallery>
+          <Searchbar onSubmit={this.handleFormSubmit} />
+
+          {this.state.loading && <div>Download</div>}
+
+          <ImageGallery images={this.state.images}></ImageGallery>
         </Container>
+
+        <button>Load More</button>
       </>
     );
   }

@@ -1,3 +1,5 @@
+import { Component } from 'react';
+
 import {
   Header,
   SearchForm,
@@ -6,23 +8,44 @@ import {
   SearchFormInput,
 } from './Searchbar.styled';
 
-const Searchbar = () => {
-  return (
-    <Header>
-      <SearchForm>
-        <SearchFormButton type="submit">
-          <SearchFormButtonLabel>Search</SearchFormButtonLabel>
-        </SearchFormButton>
+export default class Searchbar extends Component {
+  state = {
+    data: '',
+  };
 
-        <SearchFormInput
-          type="text"
-          autocomplete="off"
-          autoFocus
-          placeholder="Search images and photos"
-        />
-      </SearchForm>
-    </Header>
-  );
-};
+  handleDataChange = event => {
+    this.setState({ data: event.currentTarget.value.toLowerCase() });
+  };
 
-export default Searchbar;
+  handleSubmit = event => {
+    event.preventDefault();
+
+    if (this.state.data.trim() === '') {
+      alert('enter name');
+      return;
+    }
+    this.props.onSubmit(this.state.data);
+    this.setState({ data: '' });
+  };
+
+  render() {
+    return (
+      <Header>
+        <SearchForm onSubmit={this.handleSubmit}>
+          <SearchFormButton type="submit">
+            <SearchFormButtonLabel>Search</SearchFormButtonLabel>
+          </SearchFormButton>
+
+          <SearchFormInput
+            type="text"
+            autocomplete="off"
+            autoFocus
+            placeholder="Search images and photos"
+            value={this.state.data}
+            onChange={this.handleDataChange}
+          />
+        </SearchForm>
+      </Header>
+    );
+  }
+}
